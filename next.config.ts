@@ -17,6 +17,15 @@ const nextConfig: NextConfig = {
         hostname: "localhost",
         port: "5000",
         pathname: "/uploads/**"
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com"
+      },
+      {
+        protocol: "https",
+        hostname: "jobstack-backend-xtyo.onrender.com",
+        pathname: "/uploads/**"
       }
     ]
   }
