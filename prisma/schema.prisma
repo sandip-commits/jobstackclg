@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resumes   Resume[]
+}
+
+model Resume {
+  id              String              @id @default(cuid())
+  userId          Int
+  title           String?
+  description     String?
+  firstName       String?
+  lastName        String?
+  jobTitle        String?
+  city            String?
+  country         String?
+  phone           String?
+  email           String?
+  photoUrl        String?
+  colorHex        String              @default("#000000")
+  borderStyle     String              @default("squircle")
+  summary         String?
+  skills          String[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  analyses        AnalysisResult[]
+  educations      Education[]
+  projects        Project[]
+  recommendations JobRecommendation[]
+  user            User                @relation(fields: [userId], references: [id])
+  workExperiences WorkExperience[]
+
+  @@map("resumes")
+}
+
+model WorkExperience {
+  id          String    @id @default(cuid())
+  resumeId    String
+  position    String?
+  company     String?
+  startDate   DateTime?
+  endDate     DateTime?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  resume      Resume    @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("work_experiences")
+}
+
+model Education {
+  id        String    @id @default(cuid())
+  resumeId  String
+  degree    String?
+  school    String?
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  resume    Resume    @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("educations")
+}
+
+model Project {
+  id           String    @id @default(cuid())
+  resumeId     String
+  name         String?
+  description  String?
+  url          String?
+  technologies String[]
+  startDate    DateTime?
+  endDate      DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  resume       Resume    @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("projects")
+}
+
+model AnalysisResult {
+  id        Int      @id @default(autoincrement())
+  resumeId  String
+  result    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resume    Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("analysis_results")
+}
+
+model JobRecommendation {
+  id          Int      @id @default(autoincrement())
+  resumeId    String
+  title       String
+  description String?
+  score       Float?
+  createdAt   DateTime @default(now())
+  resume      Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("job_recommendations")
+}
