@@ -1,31 +1,36 @@
 import multer from "multer";
 import path from "path";
-import fs from "fs";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 
-// Create uploads directory if it doesn't exist
-const uploadDir = path.join(process.cwd(), "uploads", "resume_photos");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-// Configure storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename: timestamp-random-originalname
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+// Configure Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: async (req, file) => {
+    // Sanitize filename - remove special characters, emojis, and spaces
     const ext = path.extname(file.originalname);
     const name = path.basename(file.originalname, ext);
-    // Sanitize filename - remove special characters, emojis, and spaces
     const sanitizedName = name
       .replace(/[^\w\s-]/g, '') // Remove special chars and emojis
       .replace(/\s+/g, '-')      // Replace spaces with hyphens
       .replace(/-+/g, '-')       // Replace multiple hyphens with single
       .substring(0, 50);         // Limit length
     const finalName = sanitizedName || 'resume-photo';
-    cb(null, `${finalName}-${uniqueSuffix}${ext}`);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+
+    return {
+      folder: "resume_photos",
+      public_id: `${finalName}-${uniqueSuffix}`,
+      format: ext.substring(1), // Remove the dot from extension
+      transformation: [{ width: 500, height: 500, crop: "limit" }], // Optimize images
+    };
   },
 });
 
@@ -56,3 +61,6 @@ export const upload = multer({
   },
   fileFilter: fileFilter,
 });
+
+// Export cloudinary instance for use in controllers
+export { cloudinary };

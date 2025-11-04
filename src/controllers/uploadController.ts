@@ -6,14 +6,14 @@ export const uploadImage = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    // Construct the URL for the uploaded file using environment variable
-    const backendUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get("host")}`;
-    const fileUrl = `${backendUrl}/uploads/resume_photos/${req.file.filename}`;
+    // Cloudinary automatically provides the URL in req.file.path
+    const fileUrl = (req.file as any).path; // Cloudinary URL
+    const filename = (req.file as any).filename || req.file.originalname;
 
     res.status(200).json({
       message: "File uploaded successfully",
       url: fileUrl,
-      filename: req.file.filename,
+      filename: filename,
     });
   } catch (error) {
     console.error("Upload error:", error);
