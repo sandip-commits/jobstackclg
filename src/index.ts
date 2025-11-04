@@ -13,7 +13,6 @@ const app = express();
 // Allowed origins
 const allowedOrigins = [
   "http://localhost:3000", // local frontend
-  "https://jobstack-ten.vercel.app", // deployed frontend
 ];
 
 // CORS configuration
@@ -22,6 +21,11 @@ app.use(
     origin: function (origin, callback) {
       // allow requests with no origin (e.g., Postman)
       if (!origin) return callback(null, true);
+
+      // Allow all Vercel deployments
+      if (origin.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
 
       if (allowedOrigins.indexOf(origin) === -1) {
         const msg =
