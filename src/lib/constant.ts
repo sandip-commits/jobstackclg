@@ -61,17 +61,53 @@ For performanceMetrics, rate each area 1-10 based on:
 - atsCompatibility: ATS-friendly formatting, scannable structure, proper headings. Evaluate if resume uses standard section headers (Experience, Education, Skills), avoids graphics/images, has clean formatting, and is easily parsable by ATS systems
 - quantifiableAchievements: Use of numbers, percentages, metrics in accomplishments. Look for specific numbers, percentages, dollar amounts, timeframes, team sizes, project scopes, and measurable results
 
-For atsCompatibility specifically, be very strict and look for:
-- Standard section headings (Experience, Education, Skills, Summary, etc.)
-- Clean, simple formatting without graphics, images, or complex layouts
-- Proper use of keywords relevant to the industry/role
-- Quantified achievements with specific numbers and metrics
-- Action verbs at the beginning of bullet points
-- Consistent formatting throughout the document
-- Contact information clearly visible
-- No tables, charts, or complex formatting that might confuse ATS systems
+For atsCompatibility specifically, be VERY STRICT and professional. Evaluate based on these critical ATS requirements:
 
-For atsChecklist, provide specific requirements and improvements to ensure the resume passes ATS systems successfully.
+FORMATTING REQUIREMENTS (Must be ATS-parsable):
+- Uses standard section headings EXACTLY as: "Professional Experience" or "Work Experience", "Education", "Skills", "Summary" or "Professional Summary"
+- Single-column layout (no multi-column designs that confuse parsers)
+- Standard fonts only (Arial, Calibri, Georgia, Times New Roman, etc.)
+- No headers, footers, text boxes, or content outside main body
+- No graphics, images, icons, charts, or visual elements
+- No tables (use simple bullet points instead)
+- Clear date formats (MM/YYYY or Month YYYY)
+- Consistent bullet point style throughout
+
+CONTENT REQUIREMENTS (Must be keyword-optimized):
+- Industry-specific keywords appear naturally in context
+- Job titles match standard industry nomenclature
+- Technical skills listed explicitly (not just implied)
+- Acronyms spelled out on first use with acronym in parentheses
+- Hard skills and soft skills clearly identifiable
+- Certifications and degrees use official full names
+
+STRUCTURE REQUIREMENTS (Must be logically organized):
+- Contact information at top (name, phone, email, LinkedIn, location)
+- Reverse chronological order for experience and education
+- Clear job titles with company names and dates
+- 3-6 bullet points per position focusing on achievements
+- Consistent formatting for all entries in each section
+- No unexplained gaps in employment (or gaps addressed professionally)
+
+ACHIEVEMENT REQUIREMENTS (Must demonstrate impact):
+- Action verbs start each bullet point (Led, Developed, Implemented, Managed, etc.)
+- Quantified results with specific metrics (%, $, #, timeframes)
+- STAR method implied (Situation, Task, Action, Result)
+- Business impact clearly stated (revenue, efficiency, cost savings, user growth)
+
+RED FLAGS TO PENALIZE HEAVILY:
+- Creative/artistic resume templates
+- Images, logos, or profile photos
+- Colored backgrounds or decorative elements
+- Unusual fonts or font sizes below 10pt
+- Text in headers/footers
+- Skills shown as progress bars or graphics
+- Missing contact information
+- Vague job descriptions without measurable results
+- Inconsistent date formats
+- Spelling or grammatical errors
+
+For atsChecklist, provide 5-7 SPECIFIC, ACTIONABLE items that the candidate MUST address to improve ATS compatibility. Be precise and professional. Format as: "Issue: [specific problem] → Action: [exact fix needed]"
 
 For actionItems, provide specific, actionable steps the user can take immediately to improve their resume.
 
@@ -148,55 +184,62 @@ export const METRIC_CONFIG = [
 ];
 
 export const buildPresenceChecklist = (text: any) => {
-  const hay = (text || "").toLowerCase();
+  const content = (text || "").toLowerCase();
+
+  // Helper function to check for patterns
+  const hasPattern = (pattern: RegExp): boolean => pattern.test(content);
+
+  // Helper to check multiple required sections
+  const hasRequiredSections = (): boolean => {
+    const experienceSection = /\b(experience|work\s+history|employment|professional\s+experience)\b/.test(content);
+    const educationSection = /\b(education|academic|qualifications)\b/.test(content);
+    const skillsSection = /\b(skills|competencies|technical\s+skills|core\s+competencies)\b/.test(content);
+
+    // At least 2 of these 3 sections should be present
+    return [experienceSection, educationSection, skillsSection].filter(Boolean).length >= 2;
+  };
+
   return [
     {
-      label: "Standard Section Headings",
-      present:
-        /experience|education|skills|summary|objective|work history|professional experience|employment/.test(
-          hay,
-        ),
+      label: "Uses Standard Section Headings (Experience, Education, Skills)",
+      present: hasRequiredSections(),
     },
     {
-      label: "Contact Information",
-      present: /email|phone|linkedin|github|portfolio|@|\.com|\.net|\.org/.test(
-        hay,
-      ),
+      label: "Contains Complete Contact Information",
+      present: hasPattern(/(@|email|e-mail)/) &&
+               hasPattern(/(\d{3}[-.\s]?\d{3}[-.\s]?\d{4}|\+\d{1,3}\s?\d+|phone|mobile|cell)/),
     },
     {
-      label: "Keywords & Skills",
-      present:
-        /skills|technologies|tech skills|competencies|programming|software|tools|javascript|python|java|react|node|sql|html|css|aws|docker|kubernetes|agile|scrum|git|api|database|framework|library|language|technology|stack/.test(
-          hay,
-        ),
+      label: "Includes Industry-Relevant Keywords & Technical Skills",
+      present: hasPattern(/\b(skills|technologies|competencies|proficient|expertise|knowledge)\b/) &&
+               // Check for actual skill mentions
+               hasPattern(/\b(java|python|javascript|react|node|sql|aws|azure|gcp|docker|kubernetes|agile|scrum|management|leadership|marketing|sales|design|engineering|development|analysis|communication)\b/),
     },
     {
-      label: "Quantified Achievements",
-      present:
-        /\d+%|\d+ percent|\d+ people|\d+ team|\d+ project|\d+ year|\d+ month|\d+ dollar|\$\d+|\d+ users|\d+ customers|\d+ revenue|\d+ growth|\d+ improvement|\d+ reduction|\d+ increase|\d+ decrease/.test(
-          hay,
-        ),
+      label: "Contains Quantified Achievements with Measurable Results",
+      present: hasPattern(/\d+\s*%|\$\s*\d+|increased|decreased|improved|reduced|grew|generated|saved/) &&
+               hasPattern(/\b\d+\s*(percent|%|users|customers|revenue|million|thousand|team|projects?|years?|months?)\b/),
     },
     {
-      label: "Action Verbs",
-      present:
-        /developed|created|implemented|managed|led|designed|built|improved|increased|decreased|achieved|delivered|launched|optimized|streamlined|enhanced|established|coordinated|facilitated|orchestrated|spearheaded|pioneered|architected|engineered|deployed|maintained|supported|troubleshot|resolved|analyzed|researched|evaluated|assessed|planned|organized|executed|completed|finished|accomplished|generated|produced|created|developed|built|constructed|assembled|fabricated|manufactured|produced|yielded|resulted|caused|brought|about|led|to|contributed|to|helped|assisted|aided|supported|enabled|empowered|facilitated|promoted|encouraged|fostered|nurtured|cultivated|developed|grew|expanded|scaled|increased|boosted|enhanced|improved|upgraded|refined|polished|perfected|optimized|streamlined|simplified|clarified|organized|structured|arranged|systematized|standardized|formalized|institutionalized|established|founded|created|initiated|started|began|commenced|launched|introduced|unveiled|revealed|disclosed|announced|declared|proclaimed|stated|expressed|communicated|conveyed|transmitted|delivered|presented|demonstrated|exhibited|displayed|showcased|highlighted|emphasized|stressed|underscored|accentuated|featured|spotlighted|focused|centered|concentrated|targeted|aimed|directed|guided|steered|navigated|piloted|drove|propelled|pushed|advanced|progressed|moved|forward|accelerated|expedited|hastened|rushed|hurried|sped|up|quickened|fastened|accelerated|boosted|enhanced|amplified|magnified|multiplied|doubled|tripled|quadrupled|quintupled|sextupled|septupled|octupled|nonupled|decupled/.test(
-          hay,
-        ),
+      label: "Uses Strong Action Verbs to Start Bullet Points",
+      present: hasPattern(/\b(led|managed|developed|created|implemented|designed|built|achieved|delivered|launched|improved|increased|reduced|optimized|established|coordinated|directed|supervised|analyzed|executed|spearheaded|pioneered|transformed|streamlined|enhanced|initiated|facilitated)\b/),
     },
     {
-      label: "Professional Experience",
-      present:
-        /experience|employment|work history|professional experience|job|position|role|career|occupation|employment|work|job|position|role|title|responsibilities|duties|tasks|projects|initiatives|achievements|accomplishments|contributions|impact|results|outcomes|deliverables|outputs|work|employment|job|position|role|title|company|organization|employer|client|customer|stakeholder|team|department|division|unit|group|section|branch|office|location|site|facility|premises|workplace|workstation|desk|office|cubicle|workspace|environment|setting|context|situation|circumstance|condition|state|status|level|grade|rank|tier|category|class|type|kind|sort|variety|form|style|manner|way|method|approach|technique|strategy|tactic|procedure|process|system|framework|model|paradigm|theory|concept|idea|notion|thought|belief|opinion|view|perspective|standpoint|position|stance|attitude|mindset|outlook|approach|methodology|philosophy|principle|value|standard|criterion|benchmark|measure|metric|indicator|signal|sign|mark|token|symbol|emblem|badge|insignia|logo|brand|label|tag|stamp|seal|signature|autograph|mark|trace|track|trail|path|route|way|road|street|avenue|boulevard|highway|freeway|expressway|turnpike|parkway|drive|lane|alley|path|trail|track|route|way|road|street|avenue|boulevard|highway|freeway|expressway|turnpike|parkway|drive|lane|alley/.test(
-          hay,
-        ),
+      label: "Includes Detailed Professional Experience with Job Titles",
+      present: hasPattern(/\b(experience|employment|work\s+history)\b/) &&
+               hasPattern(/\b(manager|director|engineer|developer|analyst|designer|consultant|specialist|coordinator|lead|senior|junior|associate|executive)\b/) &&
+               hasPattern(/\d{4}|present|current/), // Has dates
     },
     {
-      label: "Education Section",
-      present:
-        /education|bachelor|master|phd|university|degree|college|school|academic|academy|institute|institution|faculty|department|program|course|curriculum|syllabus|textbook|lecture|seminar|workshop|tutorial|training|certification|certificate|diploma|transcript|gpa|grade|score|mark|result|outcome|achievement|accomplishment|success|performance|progress|development|growth|improvement|enhancement|advancement|promotion|elevation|upgrade|boost|lift|raise|increase|improvement|enhancement|betterment|refinement|polishing|perfection|optimization|streamlining|simplification|clarification|organization|structuring|arrangement|systematization|standardization|formalization|institutionalization|establishment|foundation|creation|initiation|start|beginning|commencement|launch|introduction|unveiling|revelation|disclosure|announcement|declaration|proclamation|statement|expression|communication|conveyance|transmission|delivery|presentation|demonstration|exhibition|display|showcase|highlighting|emphasis|stress|underscoring|accentuation|featuring|spotlighting|focusing|centering|concentration|targeting|aiming|directing|guiding|steering|navigating|piloting|driving|propelling|pushing|advancing|progressing|moving|forward|accelerating|expediting|hastening|rushing|hurrying|speeding|up|quickening|fastening|accelerating|boosting|enhancing|amplifying|magnifying|multiplying|doubling|tripling|quadrupling|quintupling|sextupling|septupling|octupling|nonupling|decupling/.test(
-          hay,
-        ),
+      label: "Contains Education Section with Degree Information",
+      present: hasPattern(/\b(education|academic|qualifications)\b/) &&
+               hasPattern(/\b(bachelor|master|mba|phd|degree|university|college|diploma|certification|certificate|b\.s\.|m\.s\.|b\.a\.|m\.a\.)\b/),
+    },
+    {
+      label: "Uses Clean, Simple Formatting (No Complex Graphics or Tables)",
+      present: !hasPattern(/(█|▓|▒|░|●|○|◆|◇|■|□|▪|▫|★|☆)/) && // No visual bars/graphics
+               !hasPattern(/\[={2,}\]|\|={2,}\|/) && // No ASCII tables
+               !hasPattern(/skill\s*level|proficiency\s*level|rating/), // No skill ratings that imply graphics
     },
   ];
 };

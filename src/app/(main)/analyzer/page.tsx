@@ -778,18 +778,22 @@ Document text:
                   <div className="mb-3 flex items-center gap-3">
                     <div className="">
                       <h3 className="mb-2 font-semibold text-violet-600 dark:text-violet-300">
-                        What is ATS?
+                        Understanding ATS (Applicant Tracking Systems)
                       </h3>
                       <p className="text-sm leading-relaxed text-slate-200">
                         <strong className="text-violet-600 dark:text-violet-300">
-                          Applicant Tracking System (ATS)
+                          Applicant Tracking Systems (ATS)
                         </strong>{" "}
-                        are software tools used by more than 75% of employers to
-                        automatically screen resumes before human review. These
-                        systems scan for keywords, proper formatting, and
-                        relevant qualifications to rank candidates. If your
-                        resume isn't ATS-friendly, it may never reach a human
-                        recruiter.
+                        are specialized software platforms used by over 98% of Fortune 500 companies and 75% of all employers to automatically filter, parse, and rank resumes before human review. These systems employ sophisticated algorithms to:
+                      </p>
+                      <ul className="mt-2 ml-4 space-y-1 text-sm text-slate-200">
+                        <li>• Extract and categorize information from your resume</li>
+                        <li>• Match keywords from job descriptions to candidate profiles</li>
+                        <li>• Score and rank candidates based on qualification criteria</li>
+                        <li>• Filter out resumes that don't meet minimum requirements</li>
+                      </ul>
+                      <p className="mt-2 text-sm leading-relaxed text-slate-200">
+                        <strong className="text-amber-400">Critical fact:</strong> Studies show that up to 75% of qualified candidates are rejected by ATS before their resume reaches a human recruiter, often due to formatting issues rather than lack of qualifications.
                       </p>
                     </div>
                   </div>
@@ -797,28 +801,59 @@ Document text:
                 <div className="info-box-violet">
                   <div className="mb-3 flex items-center gap-3">
                     <span className="text-lg text-violet-600 dark:text-violet-400">
-                      &#129302;
+                      &#9989;
                     </span>
                     <h3 className="text-lg font-semibold text-violet-600 dark:text-violet-300">
-                      ATS Compatibility Checklist
+                      Your Resume's ATS Compatibility Status
                     </h3>
                   </div>
                   <div className="space-y-2">
                     {(presenceChecklist || []).map((item, index) => (
                       <div
                         key={index}
-                        className="flex items-start gap-2 text-slate-200"
+                        className="flex items-start gap-3 rounded-lg bg-slate-800/30 p-3 text-slate-200 transition hover:bg-slate-800/50"
                       >
                         <span
-                          className={`${item.present ? "text-emerald-400" : "text-red-400"}`}
+                          className={`mt-0.5 text-xl ${item.present ? "text-emerald-400" : "text-red-400"}`}
                         >
                           {item.present ? "✅" : "❌"}
                         </span>
-                        <span>{item.label}</span>
+                        <span className="flex-1 text-sm font-medium">{item.label}</span>
                       </div>
                     ))}
                   </div>
                 </div>
+
+                {analysis.atsChecklist && analysis.atsChecklist.length > 0 && (
+                  <div className="info-box-violet">
+                    <div className="mb-3 flex items-center gap-3">
+                      <span className="text-lg text-amber-400">
+                        &#128161;
+                      </span>
+                      <h3 className="text-lg font-semibold text-violet-600 dark:text-violet-300">
+                        Expert ATS Recommendations
+                      </h3>
+                    </div>
+                    <p className="mb-3 text-sm text-slate-300">
+                      Based on professional ATS analysis, here are specific actions to improve your resume's compatibility:
+                    </p>
+                    <div className="space-y-3">
+                      {analysis.atsChecklist.map((item, index) => (
+                        <div
+                          key={index}
+                          className="border-l-4 border-amber-500 bg-slate-800/40 p-3 text-slate-200"
+                        >
+                          <div className="flex items-start gap-2">
+                            <span className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-xs font-bold text-amber-400">
+                              {index + 1}
+                            </span>
+                            <p className="flex-1 text-sm leading-relaxed">{item}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* <div className="section-card group">
