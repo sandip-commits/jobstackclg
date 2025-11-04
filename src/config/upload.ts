@@ -18,7 +18,14 @@ const storage = multer.diskStorage({
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname);
     const name = path.basename(file.originalname, ext);
-    cb(null, `${name}-${uniqueSuffix}${ext}`);
+    // Sanitize filename - remove special characters, emojis, and spaces
+    const sanitizedName = name
+      .replace(/[^\w\s-]/g, '') // Remove special chars and emojis
+      .replace(/\s+/g, '-')      // Replace spaces with hyphens
+      .replace(/-+/g, '-')       // Replace multiple hyphens with single
+      .substring(0, 50);         // Limit length
+    const finalName = sanitizedName || 'resume-photo';
+    cb(null, `${finalName}-${uniqueSuffix}${ext}`);
   },
 });
 
