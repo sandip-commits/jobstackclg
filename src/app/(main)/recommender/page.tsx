@@ -126,14 +126,14 @@ export default function JobRecommenderPage() {
             // If no jobs found, show info message but keep role recommendations
             if (rankedJobs.length === 0) {
               setInfoMessage(
-                "No jobs found in Nepal or remote positions matching your profile at this time. This may be due to limited listings in the international job database.\n\n" +
-                "We recommend checking these local job portals:\n" +
-                "• Merojob.com - Nepal's largest job portal\n" +
-                "• Kumarijob.com - Popular job site in Nepal\n" +
-                "• JobsNepal.com - Local job listings\n" +
-                "• Ramrojob.com - IT and tech jobs in Nepal\n" +
-                "• LinkedIn Jobs - Filter by Nepal or Remote\n" +
-                "• Remote.co - International remote opportunities"
+                "No jobs found matching your profile at this time. This may be due to limited listings in the job database.\n\n" +
+                "If you don't find a fitting job here, we recommend checking these popular job portals:\n\n" +
+                "• LinkedIn Jobs - Professional networking and job search\n" +
+                "• Indeed.com - Global job search engine\n" +
+                "• Glassdoor - Company reviews and job listings\n" +
+                "• Remote.co - Remote job opportunities\n" +
+                "• We Work Remotely - Remote job board\n" +
+                "• Stack Overflow Jobs - Tech-focused job listings"
               );
             } else {
               setInfoMessage(null);
@@ -499,18 +499,11 @@ Document text:
         );
       }
 
-      // =====================================================================
-      // NEPAL-SPECIFIC JOB SEARCH
-      // =====================================================================
-      // Location filtering for Kathmandu, Nepal and surrounding areas
-      const location = "Kathmandu, Nepal";
-      const countryCode = "NP"; // Nepal country code
+      console.log(`🔍 Searching for "${query}" jobs...`);
 
-      console.log(`🔍 Searching for "${query}" jobs in ${location}...`);
-
-      // Fetch more pages since Nepal jobs might be limited
+      // Fetch jobs without location restrictions
       const res = await fetch(
-        `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&country=${countryCode}&num_pages=2`,
+        `https://jsearch.p.rapidapi.com/search?query=${encodeURIComponent(query)}&num_pages=2`,
         {
           headers: {
             "x-rapidapi-key": apiKey,
@@ -535,109 +528,30 @@ Document text:
 
       console.log(`📦 API returned ${data.data.length} total jobs`);
 
-      // =====================================================================
-      // POST-FILTERING FOR NEPAL LOCATIONS + REMOTE JOBS
-      // =====================================================================
-      // Filter to include:
-      // 1. Jobs in Nepal cities
-      // 2. Remote jobs (can be done from anywhere, including Nepal)
-      const nepalKeywords = [
-        "nepal",
-        "kathmandu",
-        "pokhara",
-        "lalitpur",
-        "bhaktapur",
-        "biratnagar",
-        "birgunj",
-        "bharatpur",
-        "janakpur",
-        "dharan",
-      ];
-
-      const remoteKeywords = [
-        "remote",
-        "work from home",
-        "wfh",
-        "anywhere",
-        "work from anywhere",
-        "telecommute",
-        "virtual",
-      ];
-
-      const filteredJobs = data.data.filter((job: any) => {
-        const jobLocation = (
-          (job.job_city || "") +
-          " " +
-          (job.job_state || "") +
-          " " +
-          (job.job_country || "")
-        ).toLowerCase();
-
-        // Check if job is in Nepal
-        const isNepalJob = nepalKeywords.some((keyword) =>
-          jobLocation.includes(keyword)
-        );
-
-        // Check if job is remote (can be done from anywhere)
-        const isRemoteJob =
-          job.job_is_remote === true || // API remote flag
-          remoteKeywords.some((keyword) => jobLocation.includes(keyword));
-
-        // Accept job if it's either in Nepal OR remote
-        const shouldInclude = isNepalJob || isRemoteJob;
-
-        if (shouldInclude) {
-          const jobType = isRemoteJob ? "🌐 Remote" : "🇳🇵 Nepal";
-          console.log(
-            `✓ Accepted [${jobType}]: ${job.job_title} at ${job.employer_name} (${jobLocation || "remote"})`
-          );
-        }
-
-        return shouldInclude;
-      });
-
-      console.log(
-        `📍 Filtered to ${filteredJobs.length} jobs (Nepal locations + Remote)`
-      );
-
-      // Map to Job interface with remote flag
-      const jobs = filteredJobs.map((job: any) => {
-        const jobLocation = (
-          (job.job_city || "") +
-          " " +
-          (job.job_state || "") +
-          " " +
-          (job.job_country || "")
-        ).toLowerCase();
-
-        // Determine if job is remote
-        const isRemoteJob =
-          job.job_is_remote === true ||
-          remoteKeywords.some((keyword) => jobLocation.includes(keyword));
+      // Map to Job interface
+      const jobs = data.data.map((job: any) => {
+        const isRemoteJob = job.job_is_remote === true;
 
         return {
           title: job.job_title || "Job Title Not Available",
           company: job.employer_name || "Company Not Available",
           location: isRemoteJob
             ? "Remote"
-            : job.job_city || job.job_state || job.job_country || "Kathmandu, Nepal",
+            : [job.job_city, job.job_state, job.job_country].filter(Boolean).join(", ") || "Location Not Specified",
           description: job.job_description || "No description available",
           apply_link: job.job_apply_link || "#",
           isRemote: isRemoteJob,
         };
       });
 
-      // =====================================================================
-      // HANDLE NO RESULTS - Return empty array with info message
-      // =====================================================================
       if (jobs.length === 0) {
-        console.log("⚠️ No jobs found in Nepal or remote positions");
+        console.log("⚠️ No jobs found");
         // Don't throw error - just return empty array
         // The UI will show role recommendations + info message
         return [];
       }
 
-      console.log(`✅ Returning ${jobs.length} jobs (Nepal + Remote)`);
+      console.log(`✅ Returning ${jobs.length} jobs`);
       return jobs;
     } catch (err: any) {
       console.error("Job fetching error:", err);
@@ -649,7 +563,7 @@ Document text:
     }
   };
 
-  // =====================================================================
+  
   // TF-IDF + COSINE SIMILARITY ALGORITHM
   // =====================================================================
   // This algorithm ranks job postings by calculating semantic similarity
@@ -734,8 +648,6 @@ Document text:
 
   /**
    * Calculate Cosine Similarity between two vectors
-   * Cosine Similarity = (A · B) / (||A|| × ||B||)
-   * Range: 0 to 1, where 1 = identical, 0 = completely different
    */
   const calculateCosineSimilarity = (
     vectorA: number[],
@@ -879,14 +791,14 @@ Document text:
       // If no jobs found, show info message but keep role recommendations
       if (rankedJobs.length === 0) {
         setInfoMessage(
-          "No jobs found in Nepal or remote positions matching your profile at this time. This may be due to limited listings in the international job database.\n\n" +
-          "We recommend checking these local job portals:\n" +
-          "• Merojob.com - Nepal's largest job portal\n" +
-          "• Kumarijob.com - Popular job site in Nepal\n" +
-          "• JobsNepal.com - Local job listings\n" +
-          "• Ramrojob.com - IT and tech jobs in Nepal\n" +
-          "• LinkedIn Jobs - Filter by Nepal or Remote\n" +
-          "• Remote.co - International remote opportunities"
+          "No jobs found matching your profile at this time. This may be due to limited listings in the job database.\n\n" +
+          "If you don't find a fitting job here, we recommend checking these popular job portals:\n\n" +
+          "• LinkedIn Jobs - Professional networking and job search\n" +
+          "• Indeed.com - Global job search engine\n" +
+          "• Glassdoor - Company reviews and job listings\n" +
+          "• Remote.co - Remote job opportunities\n" +
+          "• We Work Remotely - Remote job board\n" +
+          "• Stack Overflow Jobs - Tech-focused job listings"
         );
       } else {
         setInfoMessage(null);
@@ -912,19 +824,11 @@ Document text:
             <h1 className="mb-2 bg-gradient-to-r from-cyan-400 via-teal-500 to-sky-500 bg-clip-text text-3xl font-light text-transparent lg:text-5xl">
               Job Recommender
             </h1>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="text-2xl">🇳🇵</span>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                Finding jobs in Nepal
-              </p>
-              <span className="text-xl">+</span>
-              <span className="text-2xl">🌐</span>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                Remote opportunities
-              </p>
-            </div>
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2">
+              Job Matching
+            </p>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              Upload your resume PDF to get AI-powered job recommendations (Nepal-based + Remote jobs)
+              Upload your resume PDF to get  job recommendations from around the world
             </p>
           </div>
 
